@@ -110,6 +110,18 @@ Cấp độ: {row['Level']}
                         continue
                     self.bodypart_index.setdefault(token, []).append(idx)
 
+            # build equipment index as well
+            self.equipment_index = {}
+            for idx, doc in enumerate(self.documents):
+                eq = doc['metadata'].get('equipment_norm') or doc['metadata'].get('equipment', '').strip().lower()
+                if not eq:
+                    continue
+                for token in re.split(r"[,;/\\|]\\s*|\\s+", eq):
+                    token = token.strip()
+                    if not token:
+                        continue
+                    self.equipment_index.setdefault(token, []).append(idx)
+
             print("✅ Đã load embeddings từ cache!")
             return
         
@@ -143,6 +155,18 @@ Cấp độ: {row['Level']}
                     continue
                 self.bodypart_index.setdefault(token, []).append(idx)
 
+        # Tạo index cho equipment để có thể lọc nhanh theo thiết bị
+        self.equipment_index = {}
+        for idx, doc in enumerate(self.documents):
+            eq = doc['metadata'].get('equipment_norm') or doc['metadata'].get('equipment', '').strip().lower()
+            if not eq:
+                continue
+            for token in re.split(r"[,;/\\|]\\s*|\\s+", eq):
+                token = token.strip()
+                if not token:
+                    continue
+                self.equipment_index.setdefault(token, []).append(idx)
+
         # Lưu cache (embeddings thô + documents). emb_norm và index sẽ được tái tạo khi load.
         print("Đang lưu embeddings vào cache...")
         with open(self.embeddings_cache, 'wb') as f:
@@ -165,22 +189,158 @@ Cấp độ: {row['Level']}
         total_n = len(self.documents)
         candidate_indices = set(range(total_n))
 
-        # Quick bodypart detection: if user asked about a muscle group in the query,
-        # restrict search to that group's documents for speed and relevance.
-        query_norm_text = str(query).strip().lower()
+        # Strict bodypart and equipment detection with common word boundaries
+        query_norm_text = " " + str(query).strip().lower() + " "  # add spaces for word boundary checking
+        
+        # Common English words to ignore
+        ignore_words = {'with', 'and', 'or', 'the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of'}
+        query_words = set(w for w in query_norm_text.split() if w not in ignore_words)
+        
+        # Map common variations to standard terms
+        # Initialize bodypart tokens list
+        bp_tokens_found = []
+        
+        if hasattr(self, 'bodypart_index'):
+            # Special case patterns for back to avoid false matches
+            back_patterns = [
+                r'\b(back)\b(?!\s+to|\s+and|\s+of|\s+in|\s+on|\s+at)',  # 'back' not followed by prepositions
+                r'\b(lats|latissimus)\b',
+                r'\b(upper|lower|mid)\s+back\b'
+            ]
+            
+            # Handle back exercises first (special case)
+            back_categories = {'lats', 'lower back', 'middle back'}
+            back_variations = {
+                'lats': ['lats', 'latissimus', 'lat pulldown', 'pull-up', 'pullup'],
+                'lower back': ['lower back', 'deadlift', 'good morning'],
+                'middle back': ['middle back', 'rows', 'row exercise']
+            }
+            
+            # Check for specific back part first
+            found_specific = False
+            for category, terms in back_variations.items():
+                if any(f" {term} " in query_norm_text for term in terms):
+                    if category in self.bodypart_index:
+                        bp_tokens_found.append(category)
+                        found_specific = True
+            
+            # If no specific back part found but "back" is mentioned generically
+            if not found_specific and any(re.search(pattern, query_norm_text) for pattern in back_patterns):
+                # Add all back categories to search across all back exercises
+                for category in back_categories:
+                    if category in self.bodypart_index:
+                        bp_tokens_found.append(category)
+            
+            if bp_tokens_found:
+                self.strict_back_search = True  # Force strict matching for back
+            
+            # Standard bodypart variations
+            bodypart_variations = {
+                'chest': ['chest', 'pecs', 'pectorals'],
+                'shoulders': ['shoulder', 'shoulders', 'deltoids'],
+                'biceps': ['bicep', 'biceps', 'arm'],
+                'triceps': ['tricep', 'triceps'],
+                'quadriceps': ['leg', 'legs', 'quadriceps'],
+                'hamstrings': ['hamstring', 'hamstrings'],
+                'abdominals': ['ab', 'abs', 'abdominals', 'core']
+            }
+            
+            # Check each variation against the index
+            for index_term, variations in bodypart_variations.items():
+                if index_term in self.bodypart_index:
+                    if any(f" {var} " in query_norm_text for var in variations):
+                        bp_tokens_found.append(index_term)
+        
         bp_tokens_found = []
         if hasattr(self, 'bodypart_index'):
+            # First check exact matches in index
             for token in self.bodypart_index.keys():
-                if token and token in query_norm_text:
+                if token and f" {token} " in query_norm_text:
                     bp_tokens_found.append(token)
+            
+            # If no exact matches, try variations
+            if not bp_tokens_found:
+                for std_term, variations in bodypart_variations.items():
+                    if any(f" {var} " in query_norm_text for var in variations):
+                        if std_term in self.bodypart_index:
+                            bp_tokens_found.append(std_term)
+
+        # Strict equipment detection with word boundaries and variations
+        equipment_variations = {
+            'dumbbell': ['dumbbell', 'dumbbells', 'db'],
+            'barbell': ['barbell', 'barbells', 'bb'],
+            'kettlebell': ['kettlebell', 'kettlebells', 'kb'],
+            'bodyweight': ['bodyweight', 'body weight', 'no equipment'],
+            'resistance band': ['resistance band', 'bands', 'resistance bands'],
+            'machine': ['machine', 'machines', 'gym machine']
+        }
+        
+        equip_tokens_found = []
+        if hasattr(self, 'equipment_index'):
+            # First check exact matches in index
+            for token in self.equipment_index.keys():
+                if token and f" {token} " in query_norm_text:
+                    equip_tokens_found.append(token)
+            
+            # If no exact matches, try variations
+            if not equip_tokens_found:
+                for std_term, variations in equipment_variations.items():
+                    if any(f" {var} " in query_norm_text for var in variations):
+                        if std_term in self.equipment_index:
+                            equip_tokens_found.append(std_term)
 
         if bp_tokens_found:
             # union indices for found tokens
             bp_indices = set()
             for t in bp_tokens_found:
                 bp_indices.update(self.bodypart_index.get(t, []))
-            # Prefer bodypart-based results (user requested bodypart-centric answers)
-            candidate_indices = bp_indices
+            # If equipment is also requested in the query, REQUIRE the intersection
+            if equip_tokens_found:
+                equip_indices = set()
+                for t in equip_tokens_found:
+                    equip_indices.update(self.equipment_index.get(t, []))
+                # Strict intersection - MUST match both bodypart AND equipment
+                inter = bp_indices & equip_indices
+                if inter:
+                    candidate_indices = inter
+                    # Extremely strict matching - must be primary bodypart
+                    final_indices = set()
+                    for idx in inter:
+                        doc = self.documents[idx]
+                        bodypart_norm = doc['metadata'].get('bodypart_norm', '').lower()
+                        equipment_norm = doc['metadata'].get('equipment_norm', '').lower()
+                        
+                        # Special handling for back exercises to be extremely strict
+                        if hasattr(self, 'strict_back_search') and self.strict_back_search:
+                            # For back exercises, check the first two muscle groups to catch exercises
+                            # that might list "lats" second after "back" for example
+                            primary_muscles = [m.strip() for m in bodypart_norm.split(',')[:2]]
+                            bp_match = any(any(bp == muscle for bp in bp_tokens_found) for muscle in primary_muscles)
+                            self.strict_back_search = False  # Reset for next search
+                        else:
+                            # For other bodyparts, only match if it's the primary muscle group
+                            primary_bodypart = bodypart_norm.split(',')[0].strip()
+                            bp_match = any(bp == primary_bodypart for bp in bp_tokens_found)
+                        
+                        # For equipment, any match in the list is fine
+                        eq_match = any(eq in equipment_norm for eq in equip_tokens_found)
+                        
+                        if bp_match and eq_match:
+                            final_indices.add(idx)
+                    if final_indices:
+                        candidate_indices = final_indices
+                    else:
+                        # If somehow no perfect matches, keep the original intersection
+                        candidate_indices = inter
+            else:
+                # Prefer bodypart-based results (user requested bodypart-centric answers)
+                candidate_indices = bp_indices
+        elif equip_tokens_found:
+            # No bodypart found but equipment mentioned -> restrict to equipment indices
+            equip_indices = set()
+            for t in equip_tokens_found:
+                equip_indices.update(self.equipment_index.get(t, []))
+            candidate_indices = equip_indices
         
         if filters:
             # Normalize filter values similar to get_exercise_by_filters behaviour
