@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏋️ Gym RAG AI Assistant - Trợ Lý Gym Thông Minh</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">🏋️</span>
+                <h1>Gym RAG AI Assistant</h1>
+            </div>
+            <nav class="nav" style="display: flex; align-items: center; gap: 15px;">
+                <button class="nav-btn active" onclick="showTab('chat')">💬 Chat AI</button>
+                <button class="nav-btn" onclick="showTab('workout-plan')">📋 Kế Hoạch Tập</button>
+                <button class="nav-btn" onclick="showTab('exercises')">🔍 Tìm Bài Tập</button>
+                <button class="nav-btn" onclick="showTab('stats')">📊 Thống Kê</button>
+                
+                <!-- User Info Display -->
+                <div id="user-info-display" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+                    <div id="user-greeting" style="display: none; background: rgba(255, 201, 60, 0.15); padding: 8px 16px; border-radius: 20px; border: 1px solid rgba(255, 201, 60, 0.3);">
+                        <span style="color: #ffc93c; font-weight: 500;">👤 <span id="user-name-display"></span></span>
+                    </div>
+                    <button id="logout-btn" onclick="logout()" style="display: none; background: rgba(255, 59, 48, 0.2); color: #ff3b30; border: 1px solid rgba(255, 59, 48, 0.3); padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s;">
+                        🚪 Đăng xuất
+                    </button>
+                    <a href="/login" id="login-link" style="display: block; background: rgba(52, 199, 89, 0.2); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.3); padding: 8px 16px; border-radius: 20px; text-decoration: none; font-size: 0.9rem; transition: all 0.3s;">
+                        🔐 Đăng nhập
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Chat Tab -->
+            <div id="chat-tab" class="tab-content active">
+                <div class="welcome-section">
+                    <h2>🤖 Xin chào! Tôi là trợ lý gym AI của bạn</h2>
+                    <p>Hỏi tôi bất cứ điều gì về gym: bài tập, kỹ thuật, dinh dưỡng, lịch tập...</p>
+                    <div class="quick-questions">
+                        <button onclick="askQuestion('Bài tập ngực cho người mới bắt đầu')">💪 Bài tập ngực cho newbie</button>
+                        <button onclick="askQuestion('Cách tăng cơ hiệu quả')">🔥 Tăng cơ hiệu quả</button>
+                        <button onclick="askQuestion('Bài tập lưng với tạ đơn')">🏋️ Bài tập lưng</button>
+                        <button onclick="askQuestion('Giảm mỡ bụng nhanh')">⚡ Giảm mỡ bụng</button>
+                    </div>
+                </div>
+
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    
+                    <div class="chat-input-container">
+                        <input 
+                            type="text" 
+                            id="chat-input" 
+                            class="chat-input" 
+                            placeholder="Hỏi tôi về gym, bài tập, dinh dưỡng..."
+                            onkeypress="handleChatKeyPress(event)"
+                        >
+                        <button onclick="sendMessage()" class="send-btn">
+                            <span>Gửi</span> 🚀
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Workout Plan Tab -->
+            <div id="workout-plan-tab" class="tab-content">
+                <div class="form-section">
+                    <h2>📋 Tạo Kế Hoạch Tập Luyện Cá Nhân</h2>
+                    <p>Điền thông tin của bạn để nhận kế hoạch tập luyện phù hợp</p>
+
+                    <form id="workout-form" class="workout-form">
+                        <div class="form-grid">
+                            <!-- Body Type -->
+                            <div class="form-group">
+                                <label>🧬 Loại Cơ Thể</label>
+                                <select id="body-type" required>
+                                    <option value="">Chọn loại cơ thể...</option>
+                                    <option value="ectomorph">Ectomorph (Gầy, khó tăng cân)</option>
+                                    <option value="mesomorph">Mesomorph (Cơ bắp, dễ tăng cơ)</option>
+                                    <option value="endomorph">Endomorph (Dễ tăng cân)</option>
+                                </select>
+                            </div>
+
+                            <!-- Fitness Level -->
+                            <div class="form-group">
+                                <label>📊 Trình Độ</label>
+                                <select id="fitness-level" required>
+                                    <option value="">Chọn trình độ...</option>
+                                    <option value="Beginner">Beginner (Mới bắt đầu)</option>
+                                    <option value="Intermediate">Intermediate (Trung cấp)</option>
+                                    <option value="Advanced">Advanced (Nâng cao)</option>
+                                </select>
+                            </div>
+
+                            <!-- Goals -->
+                            <div class="form-group">
+                                <label>🎯 Mục Tiêu</label>
+                                <select id="goals" required>
+                                    <option value="">Chọn mục tiêu...</option>
+                                    <option value="muscle_gain">Tăng cơ (Muscle Gain)</option>
+                                    <option value="weight_loss">Giảm cân (Weight Loss)</option>
+                                    <option value="strength">Tăng sức mạnh (Strength)</option>
+                                    <option value="endurance">Tăng sức bền (Endurance)</option>
+                                    <option value="general_fitness">Thể lực tổng quát</option>
+                                </select>
+                            </div>
+
+                            <!-- Days per Week -->
+                            <div class="form-group">
+                                <label>📅 Số Ngày Tập/Tuần</label>
+                                <select id="days-per-week" required>
+                                    <option value="3">3 ngày/tuần</option>
+                                    <option value="4">4 ngày/tuần</option>
+                                    <option value="5">5 ngày/tuần</option>
+                                    <option value="6">6 ngày/tuần</option>
+                                </select>
+                            </div>
+
+                            <!-- Height -->
+                            <div class="form-group">
+                                <label>📏 Chiều Cao (cm)</label>
+                                <input type="number" id="height" placeholder="VD: 170" min="100" max="250">
+                            </div>
+
+                            <!-- Weight -->
+                            <div class="form-group">
+                                <label>⚖️ Cân Nặng (kg)</label>
+                                <input type="number" id="weight" placeholder="VD: 70" min="30" max="200">
+                            </div>
+
+                            <!-- Age -->
+                            <div class="form-group">
+                                <label>🎂 Tuổi</label>
+                                <input type="number" id="age" placeholder="VD: 25" min="10" max="100">
+                            </div>
+
+                            <!-- Equipment -->
+                            <div class="form-group full-width">
+                                <label>🏋️ Thiết Bị Có Sẵn (giữ Ctrl để chọn nhiều)</label>
+                                <select id="equipment" multiple size="5">
+                                    <option value="Barbell">Barbell (Tạ đòn)</option>
+                                    <option value="Dumbbell">Dumbbell (Tạ đơn)</option>
+                                    <option value="Machine">Machine (Máy)</option>
+                                    <option value="Body Only">Body Only (Tự thân)</option>
+                                    <option value="Kettlebells">Kettlebells</option>
+                                    <option value="Cable">Cable</option>
+                                    <option value="Bands">Bands (Dây kháng lực)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn">
+                            🚀 Tạo Kế Hoạch Tập Luyện
+                        </button>
+                    </form>
+
+                    <div id="workout-plan-result" class="workout-plan-result"></div>
+                </div>
+            </div>
+
+            <!-- Exercises Tab -->
+            <div id="exercises-tab" class="tab-content">
+                <div class="filter-section">
+                    <h2>🔍 Tìm Kiếm Bài Tập</h2>
+                    <p>Lọc bài tập theo nhóm cơ, thiết bị và trình độ</p>
+
+                    <div class="filter-form">
+                        <div class="filter-group">
+                            <label>💪 Nhóm Cơ</label>
+                            <select id="filter-bodypart">
+                                <option value="">Tất cả</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>🏋️ Thiết Bị</label>
+                            <select id="filter-equipment">
+                                <option value="">Tất cả</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label>📊 Trình Độ</label>
+                            <select id="filter-level">
+                                <option value="">Tất cả</option>
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+
+                        <button onclick="searchExercises()" class="filter-btn">
+                            🔍 Tìm Kiếm
+                        </button>
+                    </div>
+
+                    <div id="exercises-result" class="exercises-result"></div>
+                </div>
+            </div>
+
+            <!-- Stats Tab -->
+            <div id="stats-tab" class="tab-content">
+                <div class="stats-section">
+                    <h2>📊 Thống Kê Dataset</h2>
+                    <div id="stats-content" class="stats-content">
+                        <div class="loading">Đang tải...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🏋️ Gym RAG AI Assistant - Powered by AI & Machine Learning</p>
+            <p>💪 Hơn 2900+ bài tập gym được phân tích bởi RAG AI</p>
+        </div>
+    </footer>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+

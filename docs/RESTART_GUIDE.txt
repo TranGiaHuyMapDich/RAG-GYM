@@ -1,0 +1,47 @@
+╔════════════════════════════════════════════════════════════════╗
+║              🔄 ĐÃ SỬA NÚT ĐĂNG NHẬP!                          ║
+╚════════════════════════════════════════════════════════════════╝
+
+✅ ĐÃ SỬA:
+
+- Nút "🔐 Đăng nhập" giờ sẽ HIỂN THỊ MẶC ĐỊNH ở góc phải
+- Khi đăng nhập xong → Hiện tên user + nút đăng xuất
+- Form đăng ký ĐƠN GIẢN: Chỉ cần Họ tên + Email
+- Tính năng dịch bài tập VẪN CÓ: Nút "🌐 Dịch sang Tiếng Việt"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 CHẠY APP NGAY:
+
+Double-click:
+   → START_APP_FINAL.bat
+
+Hoặc PowerShell:
+   python app.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 KIỂM TRA:
+
+1. Đợi app load xong (10-15 giây)
+2. Vào: http://localhost:8000
+3. Thấy nút "🔐 Đăng nhập" ở góc phải
+4. Click vào → Chuyển tới trang đăng ký/đăng nhập
+5. Test đăng ký với email + tên
+6. Đăng nhập xong → Thấy tên ở góc phải
+7. Chat với AI → Click nút dịch bài tập
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ TẤT CẢ TÍNH NĂNG:
+
+✅ Đăng ký/Đăng nhập (Đơn giản: Tên + Email)
+✅ Hiển thị tên user ở header
+✅ Dịch bài tập sang tiếng Việt
+✅ Chat với AI
+✅ Tạo workout plan
+✅ Tìm bài tập
+✅ Lưu vào Supabase
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+

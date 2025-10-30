@@ -1,0 +1,71 @@
+╔════════════════════════════════════════════════════════════════╗
+║                 🚀 BẮT ĐẦU NGAY - 3 PHÚT!                      ║
+╚════════════════════════════════════════════════════════════════╝
+
+✅ ĐÃ CÀI ĐẶT: Supabase packages
+✅ ĐÃ TẠO: File .env
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📍 BẠN CÓ 2 LỰA CHỌN:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🟢 LỰA CHỌN 1: CHẠY APP NGAY (KHÔNG CẦN SUPABASE)
+   
+   Tính năng hoạt động:
+   ✅ Chat với AI
+   ✅ Tạo workout plans
+   ✅ Tìm kiếm bài tập
+   
+   Tính năng KHÔNG hoạt động:
+   ❌ Đăng ký/Đăng nhập
+   ❌ Lưu dữ liệu vào database
+   ❌ Xem lịch sử
+   
+   👉 CHẠY NGAY:
+   
+   python app.py
+   
+   Sau đó vào: http://localhost:8000
+   
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔵 LỰA CHỌN 2: SETUP SUPABASE ĐẦY ĐỦ (5-10 PHÚT)
+   
+   Tính năng hoạt động:
+   ✅ Tất cả tính năng của Lựa chọn 1
+   ✅ Đăng ký/Đăng nhập
+   ✅ Lưu workout plans
+   ✅ Lưu chat history
+   ✅ Theo dõi tiến độ
+   ✅ Lưu bài tập yêu thích
+   
+   👉 LÀM THEO FILE: SETUP_SUPABASE_NOW.txt
+   
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 KHUYẾN NGHỊ:
+
+   - Muốn test nhanh → LỰA CHỌN 1
+   - Muốn đầy đủ tính năng → LỰA CHỌN 2
+   - Có thể làm Lựa chọn 1 trước, setup Supabase sau!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 TÀI LIỆU:
+
+   1. SETUP_SUPABASE_NOW.txt - Hướng dẫn setup Supabase
+   2. SUPABASE_SQL_SCHEMA.txt - Code SQL để tạo database
+   3. README.md - Tài liệu đầy đủ
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 CHẠY APP NGAY (LỰA CHỌN 1):
+
+python app.py
+
+Vào: http://localhost:8000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+

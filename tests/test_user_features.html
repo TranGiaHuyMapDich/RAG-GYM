@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test User Features - Gym RAG AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .card {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        button {
+            background: #4ecca3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #3db88f;
+        }
+        input {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: none;
+            width: 300px;
+        }
+        .output {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #4ecca3; }
+        .error { color: #ff6b6b; }
+        .warning { color: #ffc93c; }
+        h1 { text-align: center; }
+        h3 { border-bottom: 2px solid rgba(255,255,255,0.3); padding-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test User Features - Gym RAG AI</h1>
+    
+    <!-- Current Status -->
+    <div class="card">
+        <h3>📊 Trạng Thái Hiện Tại</h3>
+        <div id="current-status">Loading...</div>
+        <button onclick="checkStatus()">🔄 Refresh Status</button>
+        <button onclick="clearAllData()">🗑️ Clear All Data</button>
+    </div>
+    
+    <!-- Create User -->
+    <div class="card">
+        <h3>1️⃣ Tạo User Mới</h3>
+        <input type="email" id="user-email" placeholder="Email (e.g., test@gym.com)">
+        <input type="text" id="user-name" placeholder="Tên (e.g., Nguyễn Văn A)">
+        <br>
+        <button onclick="createUser()">✅ Tạo User</button>
+        <div id="create-output" class="output"></div>
+    </div>
+    
+    <!-- Test Chat -->
+    <div class="card">
+        <h3>2️⃣ Test Chat (Auto Save)</h3>
+        <input type="text" id="chat-question" placeholder="Câu hỏi (e.g., Bài tập ngực cho newbie)" style="width: 500px;">
+        <br>
+        <button onclick="testChat()">💬 Gửi Chat</button>
+        <div id="chat-output" class="output"></div>
+    </div>
+    
+    <!-- Test Workout Plan -->
+    <div class="card">
+        <h3>3️⃣ Test Workout Plan (Auto Save)</h3>
+        <button onclick="testWorkoutPlan()">📋 Tạo Plan Test</button>
+        <div id="plan-output" class="output"></div>
+    </div>
+    
+    <!-- View User Data -->
+    <div class="card">
+        <h3>4️⃣ Xem Dữ Liệu Đã Lưu</h3>
+        <button onclick="viewStats()">📊 Stats</button>
+        <button onclick="viewPlans()">📋 Workout Plans</button>
+        <button onclick="viewChatHistory()">💬 Chat History</button>
+        <div id="view-output" class="output"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentUserId = localStorage.getItem('userId') || null;
+
+        // Check status
+        function checkStatus() {
+            const statusDiv = document.getElementById('current-status');
+            const userId = localStorage.getItem('userId');
+            const sessionId = localStorage.getItem('sessionId');
+            
+            if (userId) {
+                statusDiv.innerHTML = `
+                    <div class="success">✅ ĐÃ ĐĂNG NHẬP</div>
+                    <div>User ID: <code>${userId}</code></div>
+                    <div>Session ID: <code>${sessionId || 'N/A'}</code></div>
+                `;
+                currentUserId = userId;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="warning">⚠️ CHƯA ĐĂNG NHẬP</div>
+                    <div>Vui lòng tạo user mới hoặc set user ID thủ công</div>
+                `;
+                currentUserId = null;
+            }
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('Xóa tất cả dữ liệu localStorage?')) {
+                localStorage.clear();
+                currentUserId = null;
+                checkStatus();
+                alert('✅ Đã xóa!');
+            }
+        }
+
+        // Create user
+        async function createUser() {
+            const email = document.getElementById('user-email').value;
+            const name = document.getElementById('user-name').value;
+            const output = document.getElementById('create-output');
+            
+            if (!email || !name) {
+                output.innerHTML = '<div class="error">❌ Vui lòng điền email và tên!</div>';
+                return;
+            }
+            
+            output.innerHTML = '<div>⏳ Đang tạo user...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        full_name: name,
+                        body_type: 'mesomorph',
+                        fitness_level: 'Intermediate',
+                        primary_goal: 'muscle_gain'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const userId = data.user.id;
+                    localStorage.setItem('userId', userId);
+                    currentUserId = userId;
+                    
+                    output.innerHTML = `
+                        <div class="success">✅ TẠO USER THÀNH CÔNG!</div>
+                        <div>User ID: <code>${userId}</code></div>
+                        <div>Email: ${data.user.email}</div>
+                        <div>Tên: ${data.user.full_name}</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    checkStatus();
+                } else {
+                    output.innerHTML = `<div class="error">❌ ${data.detail || 'Lỗi tạo user'}</div>`;
+                }
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Lỗi kết nối: ${error.message}</div>`;
+            }
+        }
+
+        // Test chat
+        async function testChat() {
+            const question = document.getElementById('chat-question').value || 'Bài tập ngực cho người mới';
+            const output = document.getElementById('chat-output');
+            
+            if (!currentUserId) {
+                output.innerHTML = '<div class="warning">⚠️ Chưa đăng nhập. Chat sẽ không được lưu!</div>';
+            }
+            
+            output.innerHTML = '<div>⏳ Đang gửi chat...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question: question,
+                        n_results: 5,
+                        user_id: currentUserId,
+                        session_id: localStorage.getItem('sessionId') || generateUUID()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                output.innerHTML = `
+                    <div class="success">✅ CHAT THÀNH CÔNG!</div>
+                    ${currentUserId ? '<div class="success">💾 Đã lưu vào database!</div>' : '<div class="warning">⚠️ Không lưu (chưa login)</div>'}
+                    <div><strong>Câu hỏi:</strong> ${question}</div>
+                    <div><strong>Trả lời:</strong> ${data.answer.substring(0, 200)}...</div>
+                    <div><strong>Số bài tập gợi ý:</strong> ${data.exercises?.length || 0}</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Lỗi: ${error.message}</div>`;
+            }
+        }
+
+        // Test workout plan
+        async function testWorkoutPlan() {
+            const output = document.getElementById('plan-output');
+            
+            if (!currentUserId) {
+                output.innerHTML = '<div class="warning">⚠️ Chưa đăng nhập. Plan sẽ không được lưu!</div>';
+            }
+            
+            output.innerHTML = '<div>⏳ Đang tạo workout plan...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/workout-plan`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        body_type: 'mesomorph',
+                        fitness_level: 'Intermediate',
+                        goals: 'muscle_gain',
+                        days_per_week: 4,
+                        height: 170,
+                        weight: 70,
+                        age: 25,
+                        user_id: currentUserId,
+                        plan_name: `Test Plan ${new Date().toLocaleString('vi-VN')}`
+                    })
+                });
+                
+                const plan = await response.json();
+                
+                output.innerHTML = `
+                    <div class="success">✅ TẠO PLAN THÀNH CÔNG!</div>
+                    ${plan.saved_plan_id ? `<div class="success">💾 Đã lưu! Plan ID: ${plan.saved_plan_id}</div>` : '<div class="warning">⚠️ Không lưu (chưa login)</div>'}
+                    <div><strong>BMI:</strong> ${plan.bmi}</div>
+                    <div><strong>Số ngày/tuần:</strong> ${plan.days_per_week}</div>
+                    <div><strong>Tổng bài tập:</strong> ${plan.weekly_schedule?.flatMap(d => d.exercises).length || 0}</div>
+                    <pre>${JSON.stringify(plan, null, 2)}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Lỗi: ${error.message}</div>`;
+            }
+        }
+
+        // View stats
+        async function viewStats() {
+            const output = document.getElementById('view-output');
+            
+            if (!currentUserId) {
+                output.innerHTML = '<div class="error">❌ Chưa đăng nhập!</div>';
+                return;
+            }
+            
+            output.innerHTML = '<div>⏳ Đang tải stats...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/users/${currentUserId}/stats`);
+                const data = await response.json();
+                
+                output.innerHTML = `
+                    <div class="success">✅ STATS</div>
+                    <div><strong>Tổng Plans:</strong> ${data.stats.total_plans}</div>
+                    <div><strong>Tổng Favorites:</strong> ${data.stats.total_favorites}</div>
+                    <div><strong>Tổng Chat Messages:</strong> ${data.stats.total_chat_messages}</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Lỗi: ${error.message}</div>`;
+            }
+        }
+
+        // View plans
+        async function viewPlans() {
+            const output = document.getElementById('view-output');
+            
+            if (!currentUserId) {
+                output.innerHTML = '<div class="error">❌ Chưa đăng nhập!</div>';
+                return;
+            }
+            
+            output.innerHTML = '<div>⏳ Đang tải plans...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/users/${currentUserId}/workout-plans`);
+                const data = await response.json();
+                
+                output.innerHTML = `
+                    <div class="success">✅ WORKOUT PLANS (${data.plans.length})</div>
+                    ${data.plans.map(p => `
+                        <div style="border-left: 3px solid #4ecca3; padding-left: 10px; margin: 10px 0;">
+                            <strong>${p.plan_name}</strong><br>
+                            ${p.days_per_week} ngày/tuần - ${new Date(p.created_at).toLocaleString('vi-VN')}<br>
+                            ID: <code>${p.id}</code>
+                        </div>
+                    `).join('')}
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Lỗi: ${error.message}</div>`;
+            }
+        }
+
+        // View chat history
+        async function viewChatHistory() {
+            const output = document.getElementById('view-output');
+            
+            if (!currentUserId) {
+                output.innerHTML = '<div class="error">❌ Chưa đăng nhập!</div>';
+                return;
+            }
+            
+            output.innerHTML = '<div>⏳ Đang tải chat history...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/users/${currentUserId}/chat-history?limit=10`);
+                const data = await response.json();
+                
+                output.innerHTML = `
+                    <div class="success">✅ CHAT HISTORY (${data.chats.length})</div>
+                    ${data.chats.map(c => `
+                        <div style="border-left: 3px solid #667eea; padding-left: 10px; margin: 10px 0;">
+                            <strong>Q:</strong> ${c.user_message}<br>
+                            <strong>A:</strong> ${c.ai_response.substring(0, 100)}...<br>
+                            <small>${new Date(c.created_at).toLocaleString('vi-VN')}</small>
+                        </div>
+                    `).join('')}
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML = `<div class="error">❌ Lỗi: ${error.message}</div>`;
+            }
+        }
+
+        // Helper
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        // Init
+        checkStatus();
+    </script>
+</body>
+</html>
+
