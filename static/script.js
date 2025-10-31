@@ -192,11 +192,6 @@ function handleChatKeyPress(event) {
     }
 }
 
-function askQuestion(question) {
-    document.getElementById('chat-input').value = question;
-    sendMessage();
-}
-
 async function sendMessage() {
     const input = document.getElementById('chat-input');
     const question = input.value.trim();
