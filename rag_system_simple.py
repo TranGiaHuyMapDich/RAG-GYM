@@ -55,6 +55,7 @@ Cấp độ: {row['Level']}
             metadata = {
                 'id': str(row['id']),
                 'title': str(row['Title']),
+                'description': str(row['Desc']) if pd.notna(row['Desc']) and str(row['Desc']).strip() else '',
                 'type': str(row['Type']),
                 'bodypart': str(row['BodyPart']),
                 'equipment': str(row['Equipment']),

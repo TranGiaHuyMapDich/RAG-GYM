@@ -424,9 +424,14 @@ function displayWorkoutPlan(plan) {
             
             if (day.exercises && day.exercises.length > 0) {
                 day.exercises.forEach(ex => {
+                    const description = ex.metadata.description || ex.text || '';
+                    const hasDescription = description && description.trim() && description.trim() !== 'nan';
                     html += `
                         <div class="exercise-card">
                             <h4>${ex.metadata.title}</h4>
+                            ${hasDescription ? `<p style="font-size: 0.9rem; margin: 0.5rem 0; color: var(--text-secondary); line-height: 1.5;">
+                                ${description.length > 200 ? description.substring(0, 200) + '...' : description}
+                            </p>` : ''}
                             <div class="meta">
                                 <span>💪 ${ex.metadata.bodypart}</span>
                                 <span>🏋️ ${ex.metadata.equipment}</span>
