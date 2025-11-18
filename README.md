@@ -210,7 +210,7 @@ Sau khi chạy, mở trình duyệt và truy cập:
 ### Chat với AI
 
 1. Vào tab  Chat AI 
-2. Gõ câu hỏi về gym (VD: "Bài tập ngực cho người mới bắt đầu")
+2. Gõ câu hỏi về gym (VD: "How to Chest Workout")
 3. Nhấn Enter hoặc click  Gửi 
 4. AI sẽ tìm kiếm và trả về các bài tập phù hợp
 
@@ -320,7 +320,7 @@ Chat với AI, tìm kiếm bài tập
  Request: 
 ```json
 {
-  "question": "Bài tập ngực cho người mới bắt đầu",
+  "question": "How to Chest Workout",
   "n_results": 5,
   "user_id": "uuid-optional",
   "target": "vi"
